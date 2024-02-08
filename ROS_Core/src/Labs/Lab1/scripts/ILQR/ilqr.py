@@ -1,5 +1,5 @@
 from typing import Tuple, Optional, Dict, Union
-from jaxlib.xla_extension import DeviceArray
+
 import time
 import os
 import numpy as np
@@ -116,7 +116,7 @@ class ILQR():
 		for vertices in vertices_list:
 			self.obstacle_list.append(Obstacle(vertices))
 
-	def get_references(self, trajectory: Union[np.ndarray, DeviceArray]):
+	def get_references(self, trajectory: Union[np.ndarray, jax.Array]):
 		'''
 		Given the trajectory, get the path reference and obstacle information.
 		Args:

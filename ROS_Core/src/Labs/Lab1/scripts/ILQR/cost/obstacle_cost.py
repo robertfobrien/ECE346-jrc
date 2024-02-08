@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import partial
-from jaxlib.xla_extension import DeviceArray
+
 import jax
 from jax import numpy as jnp
 import numpy as np
@@ -24,7 +24,7 @@ class SingleObstacleCost(BaseCost):
 
     @partial(jax.jit, static_argnums=(0,))
     def get_running_cost(
-			self, state: DeviceArray, ctrl: DeviceArray, ref: np.ndarray
+			self, state: jax.Array, ctrl: jax.Array, ref: np.ndarray
 	) -> float:
         '''
         Given a state, control, and time index, return the cost.
@@ -66,7 +66,7 @@ class ObstacleCost():
         self.single_obstacle_cost = SingleObstacleCost(config)
         
     def get_traj_cost(
-			self, trajectory: DeviceArray, controls: DeviceArray, obs_refs: np.ndarray
+			self, trajectory: jax.Array, controls: jax.Array, obs_refs: np.ndarray
 	) -> float:
         '''
 		Given a state, control, and time index, return the sum of the cost.
@@ -88,8 +88,8 @@ class ObstacleCost():
         return cost
 
     def get_derivatives_jax(
-            self, trajectory: DeviceArray, controls: DeviceArray, obs_refs: DeviceArray
-    ) -> DeviceArray:
+            self, trajectory: jax.Array, controls: jax.Array, obs_refs: jax.Array
+    ) -> jax.Array:
         
         q = 0
         r = 0

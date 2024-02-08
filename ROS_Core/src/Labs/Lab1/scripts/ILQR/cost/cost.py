@@ -1,7 +1,7 @@
 import jax
 from jax import numpy as jnp
 import numpy as np
-from jaxlib.xla_extension import DeviceArray
+
 from typing import Union
 
 from .state_cost import StateCost
@@ -19,9 +19,9 @@ class Cost():
         self.obstacle_cost = ObstacleCost(config)
     
     def get_traj_cost(
-			self, trajectory: Union[np.ndarray, DeviceArray], 
-            controls: Union[np.ndarray, DeviceArray], 
-            path_refs: Union[np.ndarray, DeviceArray], 
+			self, trajectory: Union[np.ndarray, jax.Array], 
+            controls: Union[np.ndarray, jax.Array], 
+            path_refs: Union[np.ndarray, jax.Array], 
             obs_refs: list = None
 	) -> float:
         '''
@@ -66,9 +66,9 @@ class Cost():
         return np.asarray(q), np.asarray(r), np.asarray(Q), np.asarray(R), np.asarray(H)
     
     def get_derivatives_jax(
-			self, trajectory: Union[np.ndarray, DeviceArray], 
-            controls: Union[np.ndarray, DeviceArray], 
-            path_refs: Union[np.ndarray, DeviceArray], 
+			self, trajectory: Union[np.ndarray, jax.Array], 
+            controls: Union[np.ndarray, jax.Array], 
+            path_refs: Union[np.ndarray, jax.Array], 
             obs_refs: list = None
 	) -> tuple:
         '''
@@ -79,11 +79,11 @@ class Cost():
 			path_refs:  (dim_ref, T) array of references (e.g. reference path, reference velocity, etc.)
 			obs_refs: *Optional* (num_obstacle, (2, T)) List of obstacles. Default to None
 		return:
-			q: DeviceArray, (dim_x, T) jacobian of cost function w.r.t. states
-            r: DeviceArray, (dim_u, T) jacobian of cost function w.r.t. controls
-            Q: DeviceArray, (dim_x, dim_u, T) hessian of cost function w.r.t. states
-            R: DeviceArray, (dim_u, dim_u, T) hessian of cost function w.r.t. controls
-            H: DeviceArray, (dim_x, dim_u, T) hessian of cost function w.r.t. states and controls
+			q: jax.Array, (dim_x, T) jacobian of cost function w.r.t. states
+            r: jax.Array, (dim_u, T) jacobian of cost function w.r.t. controls
+            Q: jax.Array, (dim_x, dim_u, T) hessian of cost function w.r.t. states
+            R: jax.Array, (dim_u, dim_u, T) hessian of cost function w.r.t. controls
+            H: jax.Array, (dim_x, dim_u, T) hessian of cost function w.r.t. states and controls
 		'''
         
         (state_q, state_r, state_Q, 
