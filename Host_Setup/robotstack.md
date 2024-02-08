@@ -12,7 +12,7 @@ If you already have conda (anaconda/miniconda/miniforge, etc) installed, it will
 
 If you do not have conda installed, the script will first install [**miniforge**](https://github.com/conda-forge/miniforge), and then create a new ROS Noetic environment. 
 
-We will create an alias for the new environment called ```ros_env```. You can activate the environment by running ```conda activate ros_base```.
+We will create an alias for the new environment called ```ros_env```. You can activate the environment by running ```ros_env```.
 ## Windows 10+
 You have to use Windows Subsystem Linux. Please refer to this [tutorial](Windows/windows_robostack.md) for setup.
 
