@@ -216,8 +216,10 @@ class TrajectoryPlanner():
         # Implement your control law here using ILQR policy
         # Hint: make sure that the difference in heading is between [-pi, pi]
         
-        accel = 0 # TO BE REPLACED
-        steer_rate = 0 # TO BE REPLACED
+        u = u_ref + K_closed_loop * (x - x_ref)
+
+        accel = u[0]
+        steer_rate = u[1]
 
         ##### END OF TODO ##############
 
@@ -381,7 +383,7 @@ class TrajectoryPlanner():
                 # stop when the progress is not increasing
                 while (progress - prev_progress)*new_path.length > 1e-3: # stop when the progress is not increasing
                     nominal_trajectory.append(state)
-                    new_plan = self.planner.plan(state, None)#, verbose=False)
+                    new_plan = self.planner.plan(state, None, verbose=False)
                     nominal_controls.append(new_plan['controls'][:,0])
                     K_closed_loop.append(new_plan['K_closed_loop'][:,:,0])
                     

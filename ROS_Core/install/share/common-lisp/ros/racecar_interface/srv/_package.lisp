@@ -1,0 +1,15 @@
+(cl:defpackage racecar_interface-srv
+  (:use )
+  (:export
+   "RESET"
+   "<RESET-REQUEST>"
+   "RESET-REQUEST"
+   "<RESET-RESPONSE>"
+   "RESET-RESPONSE"
+   "RESETOBSTACLE"
+   "<RESETOBSTACLE-REQUEST>"
+   "RESETOBSTACLE-REQUEST"
+   "<RESETOBSTACLE-RESPONSE>"
+   "RESETOBSTACLE-RESPONSE"
+  ))
+

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import partial
-
+from jaxlib.xla_extension import ArrayImpl as DeviceArray
 import jax
 from jax import numpy as jnp
 import numpy as np
@@ -31,7 +31,7 @@ class ControlCost(BaseCost):
     
     @partial(jax.jit, static_argnums=(0,))
     def get_running_cost(
-			self, state: jax.Array, ctrl: jax.Array, ref: jax.Array
+			self, state: DeviceArray, ctrl: DeviceArray, ref: DeviceArray
 	) -> float:
         '''
         Given a state, control, and time index, return the cost.
