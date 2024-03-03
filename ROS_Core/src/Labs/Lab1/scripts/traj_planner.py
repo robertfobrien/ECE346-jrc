@@ -452,20 +452,24 @@ class TrajectoryPlanner():
                     for example: self.trajectory_pub.publish(new_policy.to_msg())       
             '''
 
-
+            intital_controls = None
             if self.plan_state_buffer.new_data_available and  t_last_replan>self.replan_dt and self.planner_ready:
                 t_last_replan = 0
 
-                curr_state = self.plan_state_buffer.readFromRT
-                prev_policy = self.policy_buffer.readFromRT
-                intital_controls = prev_policy.get_ref_controls(rospy.get_rostime().to_sec())
+                curr_state = self.plan_state_buffer.readFromRT()
+                prev_policy = self.policy_buffer.readFromRT()
+                if prev_policy:
+                    intital_controls = prev_policy.get_ref_controls(rospy.get_rostime().to_sec())
 
                 if self.path_buffer.new_data_available:
                     self.planner.update_ref_path(self.path_buffer.readFromRT())
                 
-                solver_info = self.plan(curr_state,intital_controls)
+                solver_info = self.planner.plan(curr_state,intital_controls)
+                print("HI")
+                print(solver_info[0])
+                print(solver_info[0].keys())
 
-                if solver_info.status == 0:
+                if solver_info[0]["status"] == 0:
                     t0 = rospy.get_rostime().to_sec()
                 
                     # If stop planning is called, we will not write to the buffer
