@@ -451,7 +451,42 @@ class TrajectoryPlanner():
                 - Publish the new policy for RVIZ visualization
                     for example: self.trajectory_pub.publish(new_policy.to_msg())       
             '''
+
+
+            if self.plan_state_buffer.new_data_available and  t_last_replan>self.replan_dt and self.planner_ready:
+                t_last_replan = 0
+
+                curr_state = self.plan_state_buffer.readFromRT
+                prev_policy = self.policy_buffer.readFromRT
+                intital_controls = prev_policy.get_ref_controls(rospy.get_rostime().to_sec())
+
+                if self.path_buffer.new_data_available:
+                    self.planner.update_ref_path(self.path_buffer.readFromRT())
+                
+                solver_info = self.plan(curr_state,intital_controls)
+
+                if solver_info.status == 0:
+                    t0 = rospy.get_rostime().to_sec()
+                
+                    # If stop planning is called, we will not write to the buffer
+                    new_policy = Policy(X = solver_info.trajectory, 
+                                        U = solver_info.controls,
+                                        K = solver_info.K_closed_loop, 
+                                        t0 = t0, 
+                                        dt = self.planner.dt,
+                                        T = self.T)
+                    
+                    self.policy_buffer.writeFromNonRT(new_policy)
+                    
+                    rospy.loginfo('Finish planning a new policy...')
+                    
+                    # publish the new policy for RVIZ visualization
+                    self.trajectory_pub.publish(new_policy.to_msg())        
+
+
             ###############################
             #### END OF TODO #############
             ###############################
             time.sleep(0.01)
+            t_last_replan += 0.01
+
