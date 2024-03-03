@@ -88,13 +88,13 @@ class Cost():
         
         (state_q, state_r, state_Q, 
             state_R, state_H) = self.state_cost.get_derivatives_jax(trajectory, controls, path_refs)
-        
+
         (ctrl_q, ctrl_r, ctrl_Q,
             ctrl_R, ctrl_H) = self.control_cost.get_derivatives_jax(trajectory, controls, path_refs)
-        
+
         (obs_q, obs_r, obs_Q, 
             obs_R, obs_H) = self.obstacle_cost.get_derivatives_jax(trajectory, controls, obs_refs)
-        
+
         return (state_q + ctrl_q + obs_q,
                 state_r + ctrl_r + obs_r,
                 state_Q + ctrl_Q + obs_Q,

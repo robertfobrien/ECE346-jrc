@@ -150,7 +150,6 @@ class ILQR():
 			Q_uu_reg = R[:,:,t] + B[:,:,t].T @ (P+lamb*np.eye(5)) @ B[:,:,t]
 			Q_ux_reg = H[:,:,t] + B[:,:,t].T @ (P+lamb*np.eye(5)) @ A[:,:,t]
 
-			print(np.linalg.eigvals(Q_uu_reg))
 			if not np.all(np.linalg.eigvals(Q_uu_reg) > 0) and lamb < self.max_attempt:
 				lamb *= self.reg_scale_up
 				if lamb > self.reg_max:
@@ -180,7 +179,7 @@ class ILQR():
 			K = K_closed_loop[:,:,t]
 			k = k_open_loop[:,t]
 			u[:,t] = controls[:,t]+alpha*k+ K @ (x[:, t] - trajectory[:, t])
-			x[:,t+1], _ = self.dyn.integrate_forward_np(x[:,t], u[:,t])
+			x[:,t+1], u[:,t+1] = self.dyn.integrate_forward_np(x[:,t], u[:,t])
 
 		return x, u
 
@@ -283,7 +282,7 @@ class ILQR():
         #   Q: np.ndarray, (dim_x, dim_u, T) hessian of cost function w.r.t. states
         #   R: np.ndarray, (dim_u, dim_u, T) hessian of cost function w.r.t. controls
         #   H: np.ndarray, (dim_x, dim_u, T) hessian of cost function w.r.t. states and controls
-		
+
 		lamb = self.reg_init
 		converged = False
 		for i in range(self.max_iter):
@@ -299,10 +298,6 @@ class ILQR():
 
 				if J_new<=J:
 					if np.abs(J - J_new) < self.tol:
-
-						print(self.tol)
-						print(np.abs(J - J_new))
-
 						converged = True
 					J = J_new
 					trajectory = trajectory_new

@@ -4,6 +4,7 @@ from typing import Union
 from jaxlib.xla_extension import ArrayImpl as DeviceArray
 import jax
 from jax import numpy as jnp
+import numpy as np
 
 class BaseCost(ABC):
 	'''
@@ -125,8 +126,7 @@ class BaseCost(ABC):
 			d^2c_dx^2: (dim_x, dim_x, N)
 		'''
 		_cxx = jax.jacfwd(jax.jacrev(self.get_running_cost, argnums=0), argnums=0)
-		return jax.vmap(_cxx, in_axes=(1, 1, 1),
-					out_axes=2)(trajectory, controls, path_refs)
+		return jax.vmap(_cxx, in_axes=(1, 1, 1),out_axes=2)(trajectory, controls, path_refs)
 
 	@partial(jax.jit, static_argnums=(0,))
 	def get_cuu(
