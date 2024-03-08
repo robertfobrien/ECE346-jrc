@@ -216,13 +216,19 @@ class TrajectoryPlanner():
         # Implement your control law here using ILQR policy
         # Hint: make sure that the difference in heading is between [-pi, pi]
         
-        u = u_ref + K_closed_loop * (x - x_ref)
+        dx = x- x_ref
+        dx[3] = np.mod(dx[3] + np.pi, 2*np.pi) - np.pi
+
+        u = u_ref + K_closed_loop @ dx
 
         accel = u[0]
         steer_rate = u[1]
 
-        ##### END OF TODO ##############
 
+        ##### END OF TODO ##############
+        #rospy.loginfo("accel and steer rate: ")
+        #rospy.loginfo(accel)
+        #rospy.loginfo(steer_rate)
         return accel, steer_rate
   
     def control_thread(self):
@@ -248,6 +254,9 @@ class TrajectoryPlanner():
             x_new[2] = max(0, x_new[2]) # do not allow negative velocity
             x_new[3] = np.mod(x_new[3] + np.pi, 2 * np.pi) - np.pi
             x_new[-1] = u[1]
+            #rospy.loginfo("x_new")
+            #rospy.loginfo(x_new)
+
             return x_new
         
         while not rospy.is_shutdown():
@@ -302,6 +311,8 @@ class TrajectoryPlanner():
                 # update the state buffer for the planning thread
                 plan_state = np.append(state_cur, t_act)
                 self.plan_state_buffer.writeFromNonRT(plan_state)
+                #rospy.loginfo("plan_state")
+                #rospy.loginfo(plan_state)
                 
             # if there is no new state available, we do one step forward integration to predict the state
             elif prev_state is not None:
@@ -383,7 +394,7 @@ class TrajectoryPlanner():
                 # stop when the progress is not increasing
                 while (progress - prev_progress)*new_path.length > 1e-3: # stop when the progress is not increasing
                     nominal_trajectory.append(state)
-                    new_plan = self.planner.plan(state, None, verbose=False)
+                    new_plan = self.planner.plan(state, None)
                     nominal_controls.append(new_plan['controls'][:,0])
                     K_closed_loop.append(new_plan['K_closed_loop'][:,:,0])
                     
@@ -453,6 +464,7 @@ class TrajectoryPlanner():
             '''
 
             intital_controls = None
+            # determine if we need to replan
             if self.plan_state_buffer.new_data_available and  t_last_replan>self.replan_dt and self.planner_ready:
                 t_last_replan = 0
 
@@ -460,29 +472,36 @@ class TrajectoryPlanner():
                 prev_policy = self.policy_buffer.readFromRT()
                 if prev_policy:
                     intital_controls = prev_policy.get_ref_controls(rospy.get_rostime().to_sec())
+                    rospy.loginfo(intital_controls)
 
                 if self.path_buffer.new_data_available:
                     self.planner.update_ref_path(self.path_buffer.readFromRT())
                 
-                solver_info = self.planner.plan(curr_state,intital_controls)
-                print("HI")
-                print(solver_info[0])
-                print(solver_info[0].keys())
 
-                if solver_info[0]["status"] == 0:
+                rospy.loginfo("curr_state[:-1]")
+                rospy.loginfo(curr_state[:-1])
+                rospy.loginfo("intital_controls")
+                rospy.loginfo(intital_controls)
+
+                solver_info = self.planner.plan(curr_state[:-1],intital_controls) #the [:-1] saved us
+                #print("HI")
+                rospy.loginfo(solver_info)
+                #print(solver_info[0].keys())
+
+                if solver_info["status"] == 0:
                     t0 = rospy.get_rostime().to_sec()
                 
                     # If stop planning is called, we will not write to the buffer
-                    new_policy = Policy(X = solver_info.trajectory, 
-                                        U = solver_info.controls,
-                                        K = solver_info.K_closed_loop, 
+                    new_policy = Policy(X = solver_info["trajectory"], 
+                                        U = solver_info["controls"],
+                                        K = solver_info["K_closed_loop"], 
                                         t0 = t0, 
                                         dt = self.planner.dt,
-                                        T = self.T)
+                                        T = 10)
                     
                     self.policy_buffer.writeFromNonRT(new_policy)
                     
-                    rospy.loginfo('Finish planning a new policy...')
+                    #rospy.loginfo('Finish planning a new policy...')
                     
                     # publish the new policy for RVIZ visualization
                     self.trajectory_pub.publish(new_policy.to_msg())        
