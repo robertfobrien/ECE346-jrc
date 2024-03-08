@@ -463,7 +463,7 @@ class TrajectoryPlanner():
                     for example: self.trajectory_pub.publish(new_policy.to_msg())       
             '''
 
-            intital_controls = None
+            initial_controls = None
             # determine if we need to replan
             if self.plan_state_buffer.new_data_available and  t_last_replan>self.replan_dt and self.planner_ready:
                 t_last_replan = 0
@@ -471,21 +471,21 @@ class TrajectoryPlanner():
                 curr_state = self.plan_state_buffer.readFromRT()
                 prev_policy = self.policy_buffer.readFromRT()
                 if prev_policy:
-                    intital_controls = prev_policy.get_ref_controls(rospy.get_rostime().to_sec())
-                    rospy.loginfo(intital_controls)
+                    initial_controls = prev_policy.get_ref_controls(rospy.get_rostime().to_sec())
+                    rospy.loginfo(initial_controls)
 
                 if self.path_buffer.new_data_available:
                     self.planner.update_ref_path(self.path_buffer.readFromRT())
                 
 
-                #rospy.loginfo("curr_state[:-1]")
-                #rospy.loginfo(curr_state[:-1])
-                #rospy.loginfo("intital_controls")
-                #rospy.loginfo(intital_controls)
+                rospy.loginfo("curr_state[:-1]")
+                rospy.loginfo(curr_state[:-1])
+                rospy.loginfo("initial_controls")
+                rospy.loginfo(initial_controls)
 
-                solver_info = self.planner.plan(curr_state[:-1],intital_controls) #the [:-1] saved us
+                solver_info = self.planner.plan(curr_state[:-1],initial_controls) #the [:-1] saved us
                 #print("HI")
-                #rospy.loginfo(solver_info)
+                rospy.loginfo(solver_info)
                 #print(solver_info[0].keys())
 
                 if solver_info["status"] == 0:
@@ -498,10 +498,9 @@ class TrajectoryPlanner():
                                         t0 = t0, 
                                         dt = self.planner.dt,
                                         T = 10)
-                    
                     self.policy_buffer.writeFromNonRT(new_policy)
                     
-                    #rospy.loginfo('Finish planning a new policy...')
+                    rospy.loginfo('Finish planning a new policy...')
                     
                     # publish the new policy for RVIZ visualization
                     self.trajectory_pub.publish(new_policy.to_msg())        
