@@ -38,6 +38,9 @@ class TrajectoryPlanner():
         
         self.read_parameters()
         
+        # LAB 2
+        self.static_obstacle_dict = {}
+
         # Initialize the PWM converter
         self.pwm_converter = GeneratePwm()
         
@@ -74,6 +77,9 @@ class TrajectoryPlanner():
         # Read ROS topic names to publish
         self.control_topic = get_ros_param('~control_topic', '/control/servo_control')
         self.traj_topic = get_ros_param('~traj_topic', '/Planning/Trajectory')
+
+        # LAB 2
+        self.static_obs_topic = get_ros_param('~static_obs_topic','/Obstacles/Static')
         
         # Read the simulation flag, 
         # if the flag is true, we are in simulation 
@@ -124,6 +130,9 @@ class TrajectoryPlanner():
         '''
         self.pose_sub = rospy.Subscriber(self.odom_topic, Odometry, self.odometry_callback, queue_size=10)
         self.path_sub = rospy.Subscriber(self.path_topic, PathMsg, self.path_callback, queue_size=10)
+
+        # LAB 2
+        self.static_obs_sub = rospy.Subscriber(self.static_obs_topic, MarkerArray, self.static_obs_callback, queue_size=10)
 
     def setup_service(self):
         '''
@@ -192,6 +201,18 @@ class TrajectoryPlanner():
             rospy.loginfo('Path received!')
         except:
             rospy.logwarn('Invalid path received! Move your robot and retry!')
+
+    # LAB 2
+    def static_obs_callback(self, static_obs_msg):
+        '''
+        Subscriber callback function of static obstacles
+        '''
+
+        id, vertices_global =  get_obstacle_vertices(static_obs_msg)
+
+        self.static_obstacle_dict[id] = vertices_global
+
+        # self.control_state_buffer.writeFromNonRT(odom_msg)
 
     @staticmethod
     def compute_control(x, x_ref, u_ref, K_closed_loop):
@@ -463,6 +484,9 @@ class TrajectoryPlanner():
                     for example: self.trajectory_pub.publish(new_policy.to_msg())       
             '''
 
+            obstacles_list = []
+            obstacles_list.append
+
             initial_controls = None
             # determine if we need to replan
             if self.plan_state_buffer.new_data_available and  t_last_replan>self.replan_dt and self.planner_ready:
@@ -511,4 +535,3 @@ class TrajectoryPlanner():
             ###############################
             time.sleep(0.01)
             t_last_replan += 0.01
-
