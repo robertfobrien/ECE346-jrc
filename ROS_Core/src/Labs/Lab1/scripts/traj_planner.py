@@ -151,10 +151,6 @@ class TrajectoryPlanner():
         
         self.dyn_server = Server(plannerConfig, self.reconfigure_callback)
 
-    #LAB 2 task 3 - rob
-    def get_frs(self, t):
-        response = self.get_frs_client(t)
-        return response
 
     def start_planning_cb(self, req):
         '''
@@ -498,7 +494,16 @@ class TrajectoryPlanner():
             obstacles_list = [value for value in self.static_obstacle_dict.values()]
             #print(obstacles_list)
 
+            #Task 3, "Inside the receding horizon planning thread function..."
+            request = rospy.get_rostime().to_sec() + np.arange(self.planner.T)* self.planner.dt
+            response = self.get_frs_client(request)
+            obstacles_list.extend(frs_to_obstacle(response)) #might be backwards
+
             ILQR.update_obstacles(self.planner, obstacles_list)
+
+            msg = frs_to_msg(response)
+            self.frs_pub.publish(msg)
+            
 
             initial_controls = None
             # determine if we need to replan

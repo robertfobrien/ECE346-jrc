@@ -7,7 +7,12 @@ from geometry_msgs.msg import Polygon, Point32
 from racecar_obs_detection.srv import GetFRS, GetFRSResponse
 from racecar_obs_detection.cfg import configConfig
 from dynamic_reconfigure.server import Server
-from ROS_Core.src.Labs.Lab2.cfg import config
+
+# ROS_Core/src/Labs/Lab2/cfg/config.cfg
+
+# import sys
+# sys.path.insert(0,'../')
+# import config
 
 from lab2_utils import get_ros_param
 
@@ -66,7 +71,7 @@ class DynObstacle():
         # http://wiki.ros.org/dynamic_reconfigure/Tutorials/HowToWriteYourFirstCfgFile
         # http://wiki.ros.org/dynamic_reconfigure/Tutorials/SettingUpDynamicReconfigureForANode%28python%29
 
-        self.dyn_reconf_server = Server(config, self.dyna_reconfig_callback)
+        self.dyn_reconf_server = Server(configConfig, self.dyna_reconfig_callback)
 
         ###############################################
         ############## TODO ###########################
@@ -82,8 +87,9 @@ class DynObstacle():
         # http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28python%29
 
         # Create a service server to calculate the FRS
+        rospy.init_node("/obstacles/get_frs_server", anonymous = False)
         reset_srv = rospy.Service('/obstacles/get_frs', GetFRS, self.srv_cb)
-
+        rospy.spin()
         ###############################################
 
     def dyna_reconfig_callback(self, config):
@@ -119,9 +125,6 @@ if __name__ == '__main__':
     ##########################################
     #TODO: Initialize a ROS Node with a DynObstacle object
     ##########################################
-
-    rospy.init_node("obstacles/get_frs", anonymous = False)
-    obs = DynObstacle()
-    rospy.spin()
-
-    pass
+    print("bobbbo")
+    DynObstacle()
+    
