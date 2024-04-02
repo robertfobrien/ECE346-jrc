@@ -208,6 +208,8 @@ class TrajectoryPlanner():
         Subscriber callback function of static obstacles
         '''
 
+        print(static_obs_msg)
+
         id, vertices_global =  get_obstacle_vertices(static_obs_msg)
 
         self.static_obstacle_dict[id] = vertices_global
@@ -484,8 +486,8 @@ class TrajectoryPlanner():
                     for example: self.trajectory_pub.publish(new_policy.to_msg())       
             '''
 
-            obstacles_list = []
-            obstacles_list.append
+            obstacles_list = [value for value in self.static_obstacle_dict.values()]
+            ILQR.update_obstacles(obstacles_list)
 
             initial_controls = None
             # determine if we need to replan
