@@ -483,7 +483,9 @@ class TrajectoryPlanner():
             '''
 
             obstacles_list = [value for value in self.static_obstacle_dict.values()]
-            ILQR.update_obstacles(self, obstacles_list)
+            #print(obstacles_list)
+
+            ILQR.update_obstacles(self.planner, obstacles_list)
 
             initial_controls = None
             # determine if we need to replan
@@ -507,7 +509,7 @@ class TrajectoryPlanner():
 
                 solver_info = self.planner.plan(curr_state[:-1],initial_controls) #the [:-1] saved us
                 #print("HI")
-                rospy.loginfo(solver_info)
+                #rospy.loginfo(solver_info)
                 #print(solver_info[0].keys())
 
                 if solver_info["status"] == 0:
