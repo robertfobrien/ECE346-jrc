@@ -7,6 +7,7 @@ from geometry_msgs.msg import Polygon, Point32
 from racecar_obs_detection.srv import GetFRS, GetFRSResponse
 from racecar_obs_detection.cfg import configConfig
 from dynamic_reconfigure.server import Server
+from ROS_Core.src.Labs.Lab2.cfg import config
 
 from lab2_utils import get_ros_param
 
@@ -44,6 +45,9 @@ class DynObstacle():
         #
         # Hint: You can find <OdometryArray> message 
         #    <ROS_Core/src/Utility/Custom_Msgs/msg/OdometryArray.msg>
+
+        self.dyn_obs_sub = rospy.Subscriber(self.dyn_obs_topic, OdometryArray, self.dyn_obs_callback, queue_size=10)
+
         ###############################################
         # Class variable to store the most recent dynamic obstacle's poses
         self.dyn_obstacles = []
@@ -61,18 +65,8 @@ class DynObstacle():
         # Here are tutorials for dynamic reconfigure
         # http://wiki.ros.org/dynamic_reconfigure/Tutorials/HowToWriteYourFirstCfgFile
         # http://wiki.ros.org/dynamic_reconfigure/Tutorials/SettingUpDynamicReconfigureForANode%28python%29
-        ###############################################
-        # Dynamic reconfigure server
-        self.K_vx = 0
-        self.K_vy = 0
-        self.K_y = 0
-        self.dx = 0
-        self.dy = 0 
-        self.allow_lane_change = False
 
-        
-        # Create a service server to calculate the FRS
-        reset_srv = rospy.Service('/obstacles/get_frs', GetFRS, self.srv_cb)
+        self.dyn_reconf_server = Server(config, self.dyna_reconfig_callback)
 
         ###############################################
         ############## TODO ###########################
@@ -86,12 +80,33 @@ class DynObstacle():
         #    <ROS_Core/src/Labs/Lab2/srv/GetFRS.srv>
         # Here is the tutorial for dynamic reconfigure
         # http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28python%29
+
+        # Create a service server to calculate the FRS
+        reset_srv = rospy.Service('/obstacles/get_frs', GetFRS, self.srv_cb)
+
         ###############################################
+
+    def dyna_reconfig_callback(self, config):
+        self.K_vx = config.K_vx
+        self.K_vy = config.K_vy
+        self.K_y = config.K_y
+        self.dx = config.dx
+        self.dy = config.dy
+        self.allow_lane_change = config.allow_lane_change
+
+    # LAB 2
+    def dyn_obs_callback(self, dyn_obs_msg):
+        '''
+        Subscriber callback function of dynamic obstacles
+        '''
+
+        self.dyn_obstacles = dyn_obs_msg.odom_list
 
     def srv_cb(self, req):
         '''
         This function is a callback function of the service server
         '''
+
         t_list = req.t_list
         respond = GetFRSResponse() # Create a empty list 
         for obstacle in self.dyn_obstacles: # Iterate through all dynamic obstacles
@@ -104,5 +119,9 @@ if __name__ == '__main__':
     ##########################################
     #TODO: Initialize a ROS Node with a DynObstacle object
     ##########################################
-    
+
+    rospy.init_node("obstacles/get_frs", anonymous = False)
+    obs = DynObstacle()
+    rospy.spin()
+
     pass
