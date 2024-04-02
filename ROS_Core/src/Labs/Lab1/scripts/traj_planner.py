@@ -53,12 +53,17 @@ class TrajectoryPlanner():
 
         self.setup_service()
 
+        # set up the clients
+        #LAB 2 task 3 - rob
+        self.get_frs_client = rospy.ServiceProxy('/obstacles/get_frs', GetFRS)
+
         # start planning and control thread
         threading.Thread(target=self.control_thread).start()
         if not self.receding_horizon:
             threading.Thread(target=self.policy_planning_thread).start()
         else:
             threading.Thread(target=self.receding_horizon_planning_thread).start()
+    
     
     def read_parameters(self):
         '''
@@ -124,6 +129,9 @@ class TrajectoryPlanner():
         # Publisher for the control command
         self.control_pub = rospy.Publisher(self.control_topic, ServoMsg, queue_size=1)
 
+        # TASK 3 , LAB 2, "Create a publisher (let’s call it frs_pub)...."
+        self.frs_pub = rospy.Publisher("/vis/FRS", MarkerArray, queue_size=1)
+
     def setup_subscriber(self):
         '''
         This function sets up the subscriber for the odometry and path
@@ -142,6 +150,11 @@ class TrajectoryPlanner():
         self.stop_srv = rospy.Service('/Planning/Stop', Empty, self.stop_planning_cb)
         
         self.dyn_server = Server(plannerConfig, self.reconfigure_callback)
+
+    #LAB 2 task 3 - rob
+    def get_frs(self, t):
+        response = self.get_frs_client(t)
+        return response
 
     def start_planning_cb(self, req):
         '''
