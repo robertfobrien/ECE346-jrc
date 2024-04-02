@@ -185,7 +185,7 @@ class TrajectoryPlanner():
         width_L = []
         width_R = []
         speed_limit = []
-        
+
         for waypoint in path_msg.poses:
             x.append(waypoint.pose.position.x)
             y.append(waypoint.pose.position.y)
@@ -208,13 +208,9 @@ class TrajectoryPlanner():
         Subscriber callback function of static obstacles
         '''
 
-        print(static_obs_msg)
-
-        id, vertices_global =  get_obstacle_vertices(static_obs_msg)
-
-        self.static_obstacle_dict[id] = vertices_global
-
-        # self.control_state_buffer.writeFromNonRT(odom_msg)
+        for marker in static_obs_msg.markers:
+            id, vertices_global =  get_obstacle_vertices(marker)
+            self.static_obstacle_dict[id] = vertices_global
 
     @staticmethod
     def compute_control(x, x_ref, u_ref, K_closed_loop):
@@ -487,7 +483,7 @@ class TrajectoryPlanner():
             '''
 
             obstacles_list = [value for value in self.static_obstacle_dict.values()]
-            ILQR.update_obstacles(obstacles_list)
+            ILQR.update_obstacles(self, obstacles_list)
 
             initial_controls = None
             # determine if we need to replan
