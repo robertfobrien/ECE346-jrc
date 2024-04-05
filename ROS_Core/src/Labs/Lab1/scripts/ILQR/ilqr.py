@@ -294,7 +294,7 @@ class ILQR():
 				path_refs_new, obs_refs_new = self.get_references(trajectory_new)
 				J_new = self.cost.get_traj_cost(trajectory_new, controls_new, path_refs_new, obs_refs_new)
 
-				print(f"J_new: {J_new}; J: {J}")
+				#print(f"J_new: {J_new}; J: {J}") #commented by rob
 
 				if J_new<=J:
 					if np.abs(J - J_new) < self.tol:

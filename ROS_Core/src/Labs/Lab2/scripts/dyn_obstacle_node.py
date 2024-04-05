@@ -50,12 +50,11 @@ class DynObstacle():
         #
         # Hint: You can find <OdometryArray> message 
         #    <ROS_Core/src/Utility/Custom_Msgs/msg/OdometryArray.msg>
-
-        self.dyn_obs_sub = rospy.Subscriber(self.dyn_obs_topic, OdometryArray, self.dyn_obs_callback, queue_size=10)
-
         ###############################################
         # Class variable to store the most recent dynamic obstacle's poses
         self.dyn_obstacles = []
+
+        self.dyn_obs_sub = rospy.Subscriber(self.dyn_obs_topic, OdometryArray, self.dyn_obs_callback, queue_size=10)
         
         ###############################################
         ############## TODO ###########################
@@ -66,12 +65,22 @@ class DynObstacle():
         #       and save them to the class variables
         #
         # Hint: You can find <configConfig> message 
-        #    <ROS_Core/src/Labs/Lab2/cfg/config.cfg>
+        #    
         # Here are tutorials for dynamic reconfigure
         # http://wiki.ros.org/dynamic_reconfigure/Tutorials/HowToWriteYourFirstCfgFile
         # http://wiki.ros.org/dynamic_reconfigure/Tutorials/SettingUpDynamicReconfigureForANode%28python%29
+        # Dynamic reconfigure server
+        self.K_vx = 0
+        self.K_vy = 0
+        self.K_y = 0
+        self.dx = 0
+        self.dy = 0 
+        self.allow_lane_change = False
 
-        self.dyn_reconf_server = Server(configConfig, self.dyna_reconfig_callback)
+        print("Right before we start server") # i've been seeing this in debugs, so it's getting here
+        print("configConfig: ", configConfig) # output = <module 'racecar_obs_detection.cfg.configConfig' from '/Users/robertobrien/Documents/Intelligent-robotics/ECE346-jrc/ROS_Core/devel/lib/python3.9/site-packages/racecar_obs_detection/cfg/configConfig.py'>
+        self.dyn_reconf_server = Server(configConfig, self.dyna_reconfig_callback) 
+        print("Right after we start server")
 
         ###############################################
         ############## TODO ###########################
@@ -87,18 +96,22 @@ class DynObstacle():
         # http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28python%29
 
         # Create a service server to calculate the FRS
-        rospy.init_node("/obstacles/get_frs_server", anonymous = False)
-        reset_srv = rospy.Service('/obstacles/get_frs', GetFRS, self.srv_cb)
-        rospy.spin()
+        reset_srv = rospy.Service('/Obstacles/get_frs', GetFRS, self.srv_cb)
+        rospy.loginfo("Service /Obstacles/get_frs is now available")
         ###############################################
 
-    def dyna_reconfig_callback(self, config):
+    def dyna_reconfig_callback(self, config, question): # was getting: ERROR dyna_reconfig_callback() takes 2 positional arguments but 3 were given, so added 'question'
+        
+        print("config.K_vx: ", config.K_vx)
+        print("question mark:", question) # this variable was added because for some reason we were getting too many argumentd
+        
         self.K_vx = config.K_vx
         self.K_vy = config.K_vy
         self.K_y = config.K_y
         self.dx = config.dx
         self.dy = config.dy
         self.allow_lane_change = config.allow_lane_change
+        return config
 
     # LAB 2
     def dyn_obs_callback(self, dyn_obs_msg):
@@ -113,6 +126,8 @@ class DynObstacle():
         This function is a callback function of the service server
         '''
 
+        print("we are inside dyn_obstacle_node.py, src_cb function")
+
         t_list = req.t_list
         respond = GetFRSResponse() # Create a empty list 
         for obstacle in self.dyn_obstacles: # Iterate through all dynamic obstacles
@@ -125,6 +140,8 @@ if __name__ == '__main__':
     ##########################################
     #TODO: Initialize a ROS Node with a DynObstacle object
     ##########################################
-    print("bobbbo")
-    DynObstacle()
+    rospy.init_node("get_frs_server", anonymous=False)
+    print("dyn_obstacle_node is running") # i've been seeing this in the debugs, so we def get here
+    dyn_obstacle = DynObstacle() # have to save it to a variable so it doesn't delete
+    rospy.spin() #spin makes sure it doesnt exit
     

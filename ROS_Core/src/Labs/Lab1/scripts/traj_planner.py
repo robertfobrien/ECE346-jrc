@@ -33,6 +33,9 @@ class TrajectoryPlanner():
 
     def __init__(self):
         # Indicate if the planner is used to generate a new trajectory
+
+        self.start_time = rospy.get_rostime().to_sec()
+
         self.update_lock = threading.Lock()
         self.latency = 0.0
         
@@ -55,7 +58,11 @@ class TrajectoryPlanner():
 
         # set up the clients
         #LAB 2 task 3 - rob
-        self.get_frs_client = rospy.ServiceProxy('/obstacles/get_frs', GetFRS)
+        # wait for service to be available 
+        print("waiting for service...")
+        rospy.wait_for_service('/Obstacles/get_frs')
+        print("got service!")
+        self.get_frs_client = rospy.ServiceProxy('/Obstacles/get_frs', GetFRS)
 
         # start planning and control thread
         threading.Thread(target=self.control_thread).start()
@@ -493,16 +500,6 @@ class TrajectoryPlanner():
 
             obstacles_list = [value for value in self.static_obstacle_dict.values()]
             #print(obstacles_list)
-
-            #Task 3, "Inside the receding horizon planning thread function..."
-            request = rospy.get_rostime().to_sec() + np.arange(self.planner.T)* self.planner.dt
-            response = self.get_frs_client(request)
-            obstacles_list.extend(frs_to_obstacle(response)) #might be backwards
-
-            ILQR.update_obstacles(self.planner, obstacles_list)
-
-            msg = frs_to_msg(response)
-            self.frs_pub.publish(msg)
             
 
             initial_controls = None
@@ -510,7 +507,19 @@ class TrajectoryPlanner():
             if self.plan_state_buffer.new_data_available and  t_last_replan>self.replan_dt and self.planner_ready:
                 t_last_replan = 0
 
+
                 curr_state = self.plan_state_buffer.readFromRT()
+                t = curr_state[-1] # this is the wall time
+                request = t + np.arange(self.planner.T)* self.planner.dt
+                #print("request: ", request)
+                response = self.get_frs_client(request)
+                obstacles_list.extend(frs_to_obstacle(response)) #might be backward
+                ILQR.update_obstacles(self.planner, obstacles_list)
+                self.plan_state_buffer.new_data_available
+
+                msg = frs_to_msg(response)
+                self.frs_pub.publish(msg)
+
                 prev_policy = self.policy_buffer.readFromRT()
                 if prev_policy:
                     initial_controls = prev_policy.get_ref_controls(rospy.get_rostime().to_sec())
