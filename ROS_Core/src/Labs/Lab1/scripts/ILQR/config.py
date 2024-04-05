@@ -11,7 +11,7 @@ class Config():
         ####################################################
         self.num_dim_x = 5
         self.num_dim_u = 2
-        self.T = 10 # horizon length
+        self.T = 15 # horizon length
         self.dt = 0.1 # time step
         self.platform = "cpu" # "cpu" or "gpu" or "tpu"
         
@@ -53,12 +53,12 @@ class Config():
         self.delta_min = -0.35 # minimum steering angle
         
         # velocity limits
-        self.v_max = 5.0 # maximum velocity
+        self.v_max = 0.1 # maximum velocity
         self.v_min = 0.0 # minimum velocity
         
         # turn rate limits
-        self.omega_min = -6.0 # minimum turn rate
-        self.omega_max = 6.0 # maximum turn rate
+        self.omega_min = -10.0 # minimum turn rate
+        self.omega_max = 10.0 # maximum turn rate
         
         # acceleration limits
         self.a_max = 5.0 # maximum acceleration

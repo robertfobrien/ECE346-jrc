@@ -41,11 +41,11 @@ width: 0.22 # width of the vehicle
 length: 0.40 # length of the vehicle
 
 # steering angle limits
-delta_max: 0.35 # maximum steering angle
-delta_min: -0.35 # minimum steering angle
+delta_max: 0.4 # maximum steering angle
+delta_min: -0.4 # minimum steering angle
 
 # velocity limits
-v_max: 5.0 # maximum velocity
+v_max: 2.0 # maximum velocity
 v_min: 0.0 # minimum velocity
 
 # turn rate limits
@@ -53,8 +53,8 @@ omega_min: -6.0 # minimum turn rate
 omega_max: 6.0 # maximum turn rate
 
 # acceleration limits
-a_max: 5.0 # maximum acceleration
-a_min: -5.0 # minimum acceleration
+a_max: 4.0 # maximum acceleration
+a_min: -4.0 # minimum acceleration
 
 # reference velocity
 v_ref: 1 # reference velocity
@@ -88,7 +88,7 @@ progress_weight: 0  # weight for the progress cost
 
 # Lane Boundary Cost
 lane_boundary_a: 100.0 # parameter for lane boundary cost
-lane_boundary_b: 5.0 # parameter for ExpLinear Cost
+lane_boundary_b: 10.0 # parameter for ExpLinear Cost
 
 ########        Control Cost          ############
 # those value should not be too small
