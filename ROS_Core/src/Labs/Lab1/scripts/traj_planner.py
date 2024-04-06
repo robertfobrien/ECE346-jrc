@@ -511,7 +511,6 @@ class TrajectoryPlanner():
                 curr_state = self.plan_state_buffer.readFromRT()
                 t = curr_state[-1] # this is the wall time
                 request = t + np.arange(self.planner.T)* self.planner.dt
-                #print("request: ", request)
                 response = self.get_frs_client(request)
                 obstacles_list.extend(frs_to_obstacle(response)) #might be backward
                 ILQR.update_obstacles(self.planner, obstacles_list)
@@ -524,6 +523,9 @@ class TrajectoryPlanner():
                 if prev_policy:
                     initial_controls = prev_policy.get_ref_controls(rospy.get_rostime().to_sec())
                     rospy.loginfo(initial_controls)
+
+                    self.policy_buffer.reset() 
+                    # time.sleep(2) # wait for 2 seconds to make sure the car is stopped
 
                 if self.path_buffer.new_data_available:
                     self.planner.update_ref_path(self.path_buffer.readFromRT())
@@ -548,7 +550,7 @@ class TrajectoryPlanner():
                                         K = solver_info["K_closed_loop"], 
                                         t0 = t0, 
                                         dt = self.planner.dt,
-                                        T = 10)
+                                        T = self.planner.T)
                     self.policy_buffer.writeFromNonRT(new_policy)
                     
                     rospy.loginfo('Finish planning a new policy...')

@@ -150,7 +150,9 @@ class ILQR():
 			Q_uu_reg = R[:,:,t] + B[:,:,t].T @ (P+lamb*np.eye(5)) @ B[:,:,t]
 			Q_ux_reg = H[:,:,t] + B[:,:,t].T @ (P+lamb*np.eye(5)) @ A[:,:,t]
 
-			if not np.all(np.linalg.eigvals(Q_uu_reg) > 0) and lamb < self.max_attempt:
+			if np.isnan(Q_uu_reg).any() or np.isinf(Q_uu_reg).any():
+				continue
+			elif not np.all(np.linalg.eigvals(Q_uu_reg) > 0) and lamb < self.max_attempt:
 				lamb *= self.reg_scale_up
 				if lamb > self.reg_max:
 					raise Exception("Convergence failure within backward pass.")
