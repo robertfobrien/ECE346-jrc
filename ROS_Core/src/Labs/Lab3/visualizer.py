@@ -41,6 +41,10 @@ class TIntersectionVisualizer(ABC):
 
     def plot(self, state):
         assert len(state) == 2, "State shape must be 2"
+
+        print(state[0])
+        print(state[1])
+
         ego_index = int(state[0].replace("ego_", "")) - 1
         car_index = int(state[1].replace("car_", "")) - 1
         # plot sample T-intersection and three sample trajectories
